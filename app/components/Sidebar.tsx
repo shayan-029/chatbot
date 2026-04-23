@@ -79,9 +79,10 @@ export default function Sidebar({
             title="New chat"
             className="
               flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs
-              text-text-secondary hover:text-text-primary
-              border border-surface-border hover:border-accent/40
-              bg-surface-elevated transition-all duration-150 ml-auto
+              text-accent hover:text-accent-hover font-medium
+              border border-accent/20 hover:border-accent/50
+              bg-accent/5 hover:bg-accent/10
+              transition-all duration-150 ml-auto
             "
           >
             <svg
@@ -117,10 +118,10 @@ export default function Sidebar({
                 onMouseLeave={() => setHoveredId(null)}
                 className={`
                   group relative flex items-center gap-2 rounded-lg px-2 py-2 cursor-pointer
-                  transition-all duration-100
+                  transition-all duration-150
                   ${isActive
-                    ? "bg-accent/10 border border-accent/20 text-text-primary"
-                    : "hover:bg-surface-elevated border border-transparent text-text-secondary hover:text-text-primary"
+                    ? "bg-accent/15 border border-accent/50 text-text-primary shadow-sm shadow-accent/20"
+                    : "hover:bg-surface-elevated border border-transparent text-text-secondary hover:text-text-primary hover:border-accent/20"
                   }
                 `}
                 onClick={() => onSelect(conv.id)}

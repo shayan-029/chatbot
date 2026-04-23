@@ -5,10 +5,6 @@ import type { Message, ChatRequest } from "@/app/types";
 import { generateId } from "@/app/lib/utils";
 import { DEFAULT_SYSTEM_PROMPT } from "@/app/lib/prompts";
 
-// =============================================
-// useChat — core hook for the chatbot UI
-// =============================================
-
 interface UseChatOptions {
   conversationId?: string | null;
   initialMessages?: Message[];
@@ -21,7 +17,7 @@ interface UseChatReturn {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string) => void;
   clearMessages: () => void;
   setSystemPrompt: (prompt: string) => void;
   currentSystemPrompt: string;
@@ -36,10 +32,21 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     options.systemPrompt ?? DEFAULT_SYSTEM_PROMPT
   );
 
-  // Ref to abort ongoing fetch when the user wants to stop
   const abortControllerRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<Message[]>(messages);
+  const onMessagesChangeRef = useRef(options.onMessagesChange);
+  const onErrorRef = useRef(options.onError);
 
-  // Reset messages when the active conversation changes
+  useEffect(() => {
+    onMessagesChangeRef.current = options.onMessagesChange;
+    onErrorRef.current = options.onError;
+  });
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Reset when switching conversations
   useEffect(() => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -49,32 +56,18 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.conversationId]);
 
-  // Persist messages to the parent after streaming finishes
-  useEffect(() => {
-    if (!isLoading && messages.length > 0) {
-      options.onMessagesChange?.(messages);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-  /** Stop any in-progress streaming response */
   const stopStreaming = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    // Mark the last message as no longer streaming
-    setMessages((prev) =>
-      prev.map((m, i) =>
-        i === prev.length - 1 && m.role === "assistant"
-          ? { ...m, isStreaming: false }
-          : m
-      )
-    );
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setMessages((prev) => {
+      const next = prev.map((m) =>
+        m.isStreaming ? { ...m, isStreaming: false } : m
+      );
+      return next;
+    });
     setIsLoading(false);
   }, []);
 
-  /** Send a message and stream back the AI reply */
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
@@ -82,7 +75,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
       setError(null);
 
-      // ── 1. Add the user message immediately ───────────────────────────────
       const userMessage: Message = {
         id: generateId(),
         role: "user",
@@ -90,11 +82,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         timestamp: new Date(),
       };
 
-      // Build the full updated message list for the API call
-      const updatedMessages = [...messages, userMessage];
-      setMessages(updatedMessages);
-
-      // ── 2. Add a placeholder assistant message that will be streamed into ─
       const assistantId = generateId();
       const assistantPlaceholder: Message = {
         id: assistantId,
@@ -103,17 +90,21 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         timestamp: new Date(),
         isStreaming: true,
       };
-      setMessages((prev) => [...prev, assistantPlaceholder]);
+
+      // Snapshot history before state update
+      const historyForApi = [...messagesRef.current, userMessage].map(
+        ({ role, content }) => ({ role, content })
+      );
+
+      setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
       setIsLoading(true);
 
-      // ── 3. Create an AbortController so we can cancel the request ─────────
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
       try {
-        const requestBody: ChatRequest = {
-          // Only send role + content to the API (not our local id/timestamp)
-          messages: updatedMessages.map(({ role, content }) => ({ role, content })),
+        const body: ChatRequest = {
+          messages: historyForApi,
           systemPrompt: currentSystemPrompt,
           stream: true,
         };
@@ -121,18 +112,17 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify(body),
           signal: controller.signal,
         });
 
         if (!response.ok) {
-          const errData = await response.json();
+          const errData = await response.json().catch(() => ({}));
           throw new Error(errData.error ?? `Server error: ${response.status}`);
         }
 
-        // ── 4. Read the SSE stream ─────────────────────────────────────────
         const reader = response.body?.getReader();
-        if (!reader) throw new Error("No response body to read.");
+        if (!reader) throw new Error("No response body.");
 
         const decoder = new TextDecoder();
         let accumulated = "";
@@ -142,20 +132,15 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
+          for (const line of chunk.split("\n")) {
             const trimmedLine = line.trim();
             if (!trimmedLine.startsWith("data: ")) continue;
-
             const payload = trimmedLine.slice(6);
             if (payload === "[DONE]") break;
-
             try {
               const parsed: { content: string } = JSON.parse(payload);
               if (parsed.content) {
                 accumulated += parsed.content;
-                // Update the assistant message content in real time
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantId
@@ -165,37 +150,28 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
                 );
               }
             } catch {
-              // Skip malformed SSE line
+              // skip malformed chunk
             }
           }
         }
 
-        // ── 5. Mark streaming as done ──────────────────────────────────────
-        setMessages((prev) =>
-          prev.map((m) =>
+        // Mark done and save
+        setMessages((prev) => {
+          const next = prev.map((m) =>
             m.id === assistantId ? { ...m, isStreaming: false } : m
-          )
-        );
+          );
+          onMessagesChangeRef.current?.(next);
+          return next;
+        });
       } catch (err: unknown) {
-        if ((err as Error).name === "AbortError") {
-          // User cancelled — already handled in stopStreaming()
-          return;
-        }
-
-        const errorMsg =
-          err instanceof Error ? err.message : "Something went wrong.";
-        setError(errorMsg);
-        options.onError?.(errorMsg);
-
-        // Replace the placeholder with an error message
+        if ((err as Error).name === "AbortError") return;
+        const msg = err instanceof Error ? err.message : "Something went wrong.";
+        setError(msg);
+        onErrorRef.current?.(msg);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantId
-              ? {
-                  ...m,
-                  content: `⚠️ Error: ${errorMsg}`,
-                  isStreaming: false,
-                }
+              ? { ...m, content: `⚠️ Error: ${msg}`, isStreaming: false }
               : m
           )
         );
@@ -204,17 +180,15 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         abortControllerRef.current = null;
       }
     },
-    [messages, isLoading, currentSystemPrompt, options]
+    [isLoading, currentSystemPrompt]
   );
 
-  /** Clear all messages and start fresh */
   const clearMessages = useCallback(() => {
     stopStreaming();
     setMessages([]);
     setError(null);
   }, [stopStreaming]);
 
-  /** Update the system prompt (takes effect on next message) */
   const setSystemPrompt = useCallback((prompt: string) => {
     setCurrentSystemPrompt(prompt);
   }, []);

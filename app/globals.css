@@ -4,13 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =============================================
-   Base resets & scroll behaviour
-   ============================================= */
-
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body {
   height: 100%;
@@ -19,43 +13,63 @@ html, body {
 }
 
 body {
-  background-color: #0d0d0f;
-  color: #f0eff8;
+  background-color: #0a0f0c;
+  color: #f0fff6;
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Thin custom scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #1e1e24;
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #2e2e38;
+/* Dot grid */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #25402e 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* =============================================
-   Animation keyframes (used via Tailwind plugin)
-   ============================================= */
+/* Big radial glow center */
+body::after {
+  content: "";
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(0,230,118,0.12) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
 
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #25402e; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #3a6048; }
+
+/* Keyframes */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes pulseDot {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40%           { transform: scale(1);   opacity: 1;   }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+@keyframes frogFloat {
+  0%, 100% { transform: translateY(0px) rotate(-3deg); }
+  50%      { transform: translateY(-14px) rotate(3deg); }
 }
 
-@keyframes shimmer {
-  from { background-position: 200% 0;  }
-  to   { background-position: -200% 0; }
+/* Input glow */
+.input-glow:focus-within {
+  box-shadow: 0 0 0 1.5px rgba(0,230,118,0.5), 0 0 32px rgba(0,230,118,0.12);
 }

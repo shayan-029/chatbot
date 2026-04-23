@@ -13,26 +13,27 @@ module.exports = {
       },
       colors: {
         surface: {
-          DEFAULT: "#0d0d0f",
-          card: "#111114",
-          elevated: "#16161a",
-          border: "#1e1e24",
+          DEFAULT: "#0a0f0c",
+          card: "#0f1712",
+          elevated: "#162018",
+          border: "#25402e",
         },
         accent: {
-          DEFAULT: "#7c6af7",
-          hover: "#9585f9",
-          glow: "rgba(124,106,247,0.15)",
+          DEFAULT: "#00e676",
+          hover: "#69ff9f",
+          glow: "rgba(0,230,118,0.2)",
         },
         text: {
-          primary: "#f0eff8",
-          secondary: "#8b8a99",
-          muted: "#4a4958",
+          primary: "#f0fff6",
+          secondary: "#85c9a0",
+          muted: "#3d6e52",
         },
       },
       animation: {
         "fade-up": "fadeUp 0.3s ease forwards",
         "pulse-dot": "pulseDot 1.4s ease-in-out infinite",
         shimmer: "shimmer 2s linear infinite",
+        "frog-float": "frogFloat 6s ease-in-out infinite",
       },
       keyframes: {
         fadeUp: {
@@ -46,6 +47,10 @@ module.exports = {
         shimmer: {
           from: { backgroundPosition: "200% 0" },
           to: { backgroundPosition: "-200% 0" },
+        },
+        frogFloat: {
+          "0%, 100%": { transform: "translateY(0px) rotate(-3deg)" },
+          "50%": { transform: "translateY(-14px) rotate(3deg)" },
         },
       },
     },

@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, KeyboardEvent } from "react";
-
-// =============================================
-// ChatInput — message composer
-// =============================================
+import EmojiPicker from "./EmojiPicker";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -20,9 +17,9 @@ export default function ChatInput({
   disabled = false,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  /** Auto-grow the textarea as the user types */
   const handleInput = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -30,7 +27,6 @@ export default function ChatInput({
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, []);
 
-  /** Send on Enter, newline on Shift+Enter */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -47,16 +43,33 @@ export default function ChatInput({
     if (!trimmed || isLoading) return;
     onSend(trimmed);
     setValue("");
-    // Reset height
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
   }, [value, isLoading, onSend]);
 
+  // Insert emoji at cursor position
+  const handleEmojiSelect = useCallback((emoji: string) => {
+    const el = textareaRef.current;
+    if (!el) {
+      setValue((v) => v + emoji);
+      return;
+    }
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
+    const next = value.slice(0, start) + emoji + value.slice(end);
+    setValue(next);
+    // Restore cursor after emoji
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + emoji.length, start + emoji.length);
+    });
+  }, [value]);
+
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <div className="relative flex items-end gap-3 w-full">
+    <div className="relative flex items-end gap-2 w-full">
       {/* Textarea */}
       <div className="relative flex-1">
         <textarea
@@ -65,27 +78,44 @@ export default function ChatInput({
           onChange={(e) => setValue(e.target.value)}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
-          placeholder="Message Grok…"
+          placeholder="Message…"
           disabled={disabled}
           rows={1}
           className="
-            w-full resize-none rounded-2xl px-4 py-3 pr-12
+            w-full resize-none rounded-2xl px-4 py-3 pr-4
             bg-surface-elevated border border-surface-border
             text-text-primary text-sm placeholder:text-text-muted
             focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50
             disabled:opacity-50 disabled:cursor-not-allowed
-            transition-all duration-150
-            leading-relaxed
+            transition-all duration-150 leading-relaxed
           "
           style={{ maxHeight: "200px" }}
           aria-label="Chat message input"
         />
+      </div>
 
-        {/* Character hint */}
-        {value.length > 0 && (
-          <span className="absolute bottom-2 right-12 text-[10px] text-text-muted select-none">
-            ↵ send
-          </span>
+      {/* Emoji picker button */}
+      <div className="relative flex-shrink-0">
+        <button
+          onClick={() => setShowEmoji((v) => !v)}
+          disabled={disabled}
+          title="Insert emoji"
+          className="
+            h-10 w-10 rounded-xl flex items-center justify-center text-lg
+            bg-surface-elevated border border-surface-border
+            hover:border-accent/40 hover:bg-surface
+            disabled:opacity-40 disabled:cursor-not-allowed
+            transition-all duration-150
+          "
+        >
+          😊
+        </button>
+
+        {showEmoji && (
+          <EmojiPicker
+            onSelect={handleEmojiSelect}
+            onClose={() => setShowEmoji(false)}
+          />
         )}
       </div>
 
@@ -103,7 +133,6 @@ export default function ChatInput({
           aria-label="Stop generation"
           title="Stop generation"
         >
-          {/* Stop square icon */}
           <span className="block h-3 w-3 rounded-sm bg-current" />
         </button>
       ) : (
@@ -115,15 +144,13 @@ export default function ChatInput({
             bg-accent hover:bg-accent-hover
             disabled:bg-surface-elevated disabled:text-text-muted
             disabled:border disabled:border-surface-border
-            text-white
-            flex items-center justify-center
+            text-white flex items-center justify-center
             transition-all duration-150
             shadow-lg shadow-accent/20 disabled:shadow-none
           "
           aria-label="Send message"
           title="Send message (Enter)"
         >
-          {/* Up-arrow send icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"

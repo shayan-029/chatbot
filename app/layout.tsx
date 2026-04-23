@@ -6,13 +6,13 @@ import "./globals.css";
 // =============================================
 
 export const metadata: Metadata = {
-  title: "Grok Chat",
-  description: "AI chatbot powered by Grok (xAI)",
-  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>" },
+  title: "Frog.ai",
+  description: "AI chatbot powered by Groq",
+  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐸</text></svg>" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0f",
+  themeColor: "#07100d",
   colorScheme: "dark",
 };
 

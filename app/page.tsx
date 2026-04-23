@@ -42,14 +42,12 @@ export default function Home() {
   const [localError, setLocalError] = useState<string | null>(null);
   const displayError = error ?? localError;
 
-  // Auto-create first conversation on first load
   useEffect(() => {
     if (hydrated && conversations.length === 0) {
       createConversation();
     }
   }, [hydrated, conversations.length, createConversation]);
 
-  // Suggestion chips from ChatWindow
   useEffect(() => {
     const handler = (e: Event) => {
       const text = (e as CustomEvent<{ text: string }>).detail?.text;
@@ -72,7 +70,7 @@ export default function Home() {
   const handleDismissError = useCallback(() => setLocalError(null), []);
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden relative">
+    <div className="relative flex h-screen overflow-hidden" style={{ zIndex: 1 }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <Sidebar
@@ -86,18 +84,38 @@ export default function Home() {
       {/* ── Main chat area ───────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
-        {/* Top bar */}
-        <header className="flex-shrink-0 flex items-center justify-between px-4 py-3 pl-14 border-b border-surface-border bg-surface-card">
+        {/* ── Header ───────────────────────────────────────────── */}
+        <header className="
+          relative flex-shrink-0 flex items-center justify-between px-4 py-3 pl-14
+          border-b border-accent/20
+          bg-surface-card/90 backdrop-blur-sm
+        ">
+          {/* Bright glow line at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+
           {/* Brand */}
-          <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-accent/15 border border-accent/20 flex items-center justify-center text-sm">
-              ✦
+          <div className="flex items-center gap-3">
+            {/* Frog logo */}
+            <div className="
+              relative h-10 w-10 rounded-xl
+              bg-gradient-to-br from-accent/30 to-accent/10
+              border border-accent/50
+              flex items-center justify-center text-2xl
+              shadow-lg shadow-accent/30
+            ">
+              🐸
+              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-accent shadow-md shadow-accent animate-pulse" />
             </div>
+
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold text-text-primary">
-                {activeConversation?.title ?? "Grok Chat"}
+              <span className="text-base font-bold bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent drop-shadow-sm">
+                Frog.ai
               </span>
-              <span className="text-[10px] text-text-muted">Groq · llama-3.3-70b</span>
+              <span className="text-[10px] text-text-muted">
+                {activeConversation?.title && activeConversation.title !== "New Chat"
+                  ? activeConversation.title
+                  : "llama-3.1-8b-instant · fast"}
+              </span>
             </div>
           </div>
 
@@ -121,19 +139,10 @@ export default function Home() {
                 "
                 title="Clear conversation"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                  className="h-3.5 w-3.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={1.8} className="h-3.5 w-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
                 Clear
               </button>
@@ -141,13 +150,21 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Message area */}
-        <main className="flex-1 overflow-hidden">
+        {/* ── Message area ──────────────────────────────────────── */}
+        <main className="flex-1 overflow-hidden relative">
           <ChatWindow messages={messages} isLoading={isLoading} />
         </main>
 
-        {/* Bottom bar */}
-        <footer className="flex-shrink-0 border-t border-surface-border bg-surface-card px-4 pt-3 pb-4 space-y-2">
+        {/* ── Bottom bar ────────────────────────────────────────── */}
+        <footer className="
+          relative flex-shrink-0
+          border-t border-surface-border
+          bg-gradient-to-t from-surface-card to-surface-card/80
+          px-4 pt-3 pb-4 space-y-2
+        ">
+          {/* Top glow line */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+
           {displayError && (
             <ErrorBanner error={displayError} onDismiss={handleDismissError} />
           )}
@@ -162,11 +179,13 @@ export default function Home() {
               Shift+Enter for newline
             </span>
           </div>
-          <ChatInput
-            onSend={sendMessage}
-            onStop={stopStreaming}
-            isLoading={isLoading}
-          />
+          <div className="input-glow rounded-2xl">
+            <ChatInput
+              onSend={sendMessage}
+              onStop={stopStreaming}
+              isLoading={isLoading}
+            />
+          </div>
         </footer>
       </div>
     </div>
