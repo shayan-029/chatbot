@@ -8,6 +8,7 @@ import ChatInput from "./components/ChatInput";
 import SystemPromptPanel from "./components/SystemPromptPanel";
 import ErrorBanner from "./components/ErrorBanner";
 import Sidebar from "./components/Sidebar";
+import SetupBanner from "./components/SetupBanner";
 
 export default function Home() {
   const {
@@ -40,6 +41,14 @@ export default function Home() {
   });
 
   const [localError, setLocalError] = useState<string | null>(null);
+  const [apiConfigured, setApiConfigured] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((d) => setApiConfigured(d.configured))
+      .catch(() => {});
+  }, []);
   const displayError = error ?? localError;
 
   useEffect(() => {
@@ -71,6 +80,7 @@ export default function Home() {
 
   return (
     <div className="relative flex h-screen overflow-hidden" style={{ zIndex: 1 }}>
+      {!apiConfigured && <SetupBanner />}
 
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <Sidebar
