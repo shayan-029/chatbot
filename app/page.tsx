@@ -20,6 +20,7 @@ export default function Home() {
     selectConversation,
     deleteConversation,
     updateMessages,
+    mongoAvailable,
   } = useConversations();
 
   const {
@@ -46,7 +47,7 @@ export default function Home() {
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
-      .then((d) => setApiConfigured(d.configured))
+      .then((d) => setApiConfigured(d.groqConfigured))
       .catch(() => {});
   }, []);
   const displayError = error ?? localError;
@@ -97,29 +98,28 @@ export default function Home() {
         {/* ── Header ───────────────────────────────────────────── */}
         <header className="
           relative flex-shrink-0 flex items-center justify-between px-4 py-3 pl-14
-          border-b border-accent/20
-          bg-surface-card/90 backdrop-blur-sm
+          border-b border-accent/25
+          bg-surface-card/95 backdrop-blur-xl
         ">
-          {/* Bright glow line at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+          {/* Gradient glow line at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-80" />
 
           {/* Brand */}
           <div className="flex items-center gap-3">
-            {/* Frog logo */}
             <div className="
-              relative h-10 w-10 rounded-xl
-              bg-gradient-to-br from-accent/30 to-accent/10
-              border border-accent/50
+              relative h-11 w-11 rounded-2xl
+              bg-gradient-to-br from-accent via-accent/80 to-accent/40
               flex items-center justify-center text-2xl
-              shadow-lg shadow-accent/30
+              shadow-xl shadow-accent/40
+              ring-1 ring-accent/60
             ">
-              🐸
-              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-accent shadow-md shadow-accent animate-pulse" />
+              🐢
+              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/60 animate-pulse" />
             </div>
 
             <div className="flex flex-col leading-tight">
-              <span className="text-base font-bold bg-gradient-to-r from-accent via-accent/90 to-accent/60 bg-clip-text text-transparent drop-shadow-sm">
-                Frog.ai
+              <span className="text-base font-bold bg-gradient-to-r from-white via-accent/90 to-accent/70 bg-clip-text text-transparent">
+                Turtle.ai
               </span>
               <span className="text-[10px] text-text-muted">
                 {activeConversation?.title && activeConversation.title !== "New Chat"
@@ -131,6 +131,13 @@ export default function Home() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {!mongoAvailable && (
+              <span title="MongoDB not connected — chats saved locally only"
+                className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-full
+                  bg-yellow-500/10 border border-yellow-500/30 text-yellow-400">
+                ⚠ Local only
+              </span>
+            )}
             {messages.length > 0 && (
               <span className="text-xs text-text-muted px-2 py-0.5 rounded-full border border-surface-border bg-surface-elevated">
                 {messages.length} msg{messages.length !== 1 ? "s" : ""}
@@ -168,12 +175,12 @@ export default function Home() {
         {/* ── Bottom bar ────────────────────────────────────────── */}
         <footer className="
           relative flex-shrink-0
-          border-t border-surface-border
-          bg-gradient-to-t from-surface-card to-surface-card/80
-          px-4 pt-3 pb-4 space-y-2
+          border-t border-accent/15
+          bg-surface-card/95 backdrop-blur-xl
+          px-4 pt-2.5 pb-4 space-y-2
         ">
           {/* Top glow line */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
 
           {displayError && (
             <ErrorBanner error={displayError} onDismiss={handleDismissError} />
@@ -189,13 +196,11 @@ export default function Home() {
               Shift+Enter for newline
             </span>
           </div>
-          <div className="input-glow rounded-2xl">
-            <ChatInput
-              onSend={sendMessage}
-              onStop={stopStreaming}
-              isLoading={isLoading}
-            />
-          </div>
+          <ChatInput
+            onSend={sendMessage}
+            onStop={stopStreaming}
+            isLoading={isLoading}
+          />
         </footer>
       </div>
     </div>

@@ -26,40 +26,35 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   if (messages.length === 0) {
     return (
       <div className="relative flex flex-col items-center justify-center h-full gap-8 px-4 overflow-hidden">
-        {/* Background frog watermark */}
+        {/* Background turtle */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span
-            className="text-[260px] leading-none opacity-[0.04] animate-frog-float"
-            aria-hidden="true"
-          >
-            🐸
-          </span>
+          <span className="text-[280px] leading-none animate-turtle-float" aria-hidden="true">🐢</span>
         </div>
 
         {/* Welcome card */}
-        <div className="relative flex flex-col items-center gap-4 z-10">
+        <div className="relative flex flex-col items-center gap-5 z-10">
           <div className="
-            h-24 w-24 rounded-3xl
-            bg-gradient-to-br from-accent/30 to-accent/10
-            border-2 border-accent/60
-            flex items-center justify-center text-5xl
-            shadow-2xl shadow-accent/40
-            animate-frog-float
+            h-28 w-28 rounded-3xl
+            bg-gradient-to-br from-accent via-accent/70 to-accent/30
+            flex items-center justify-center text-6xl
+            shadow-2xl shadow-accent/50
+            ring-2 ring-accent/40 ring-offset-2 ring-offset-surface
+            animate-turtle-float
           ">
-            🐸
+            🐢
           </div>
-          <div className="text-center">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-accent via-accent/90 to-accent/50 bg-clip-text text-transparent drop-shadow-lg">
-              Frog.ai
+          <div className="text-center space-y-2">
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-white via-accent to-accent/60 bg-clip-text text-transparent">
+              Turtle.ai
             </h2>
-            <p className="text-sm text-text-secondary mt-1.5">
-              Powered by Groq · ultra-fast AI
+            <p className="text-sm text-text-secondary">
+              Powered by Groq · llama-3.1-8b-instant
             </p>
           </div>
         </div>
 
         {/* Suggestion chips */}
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
           {WELCOME_SUGGESTIONS.map((s) => (
             <SuggestionChip key={s} text={s} />
           ))}
@@ -69,16 +64,20 @@ export default function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   }
 
   return (
-    <div className="relative flex flex-col gap-6 py-6 px-4 overflow-y-auto h-full">
-      {/* Faint frog watermark behind messages */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
-        <span className="text-[320px] leading-none opacity-[0.025]">🐸</span>
+    <div className="relative h-full overflow-hidden">
+
+      {/* Single animated turtle — centered in chat area */}
+      <div className="absolute inset-0 pointer-events-none select-none flex items-center justify-center" aria-hidden="true">
+        <span className="text-[320px] leading-none animate-turtle-float">🐢</span>
       </div>
 
-      {messages.map((message) => (
-        <ChatMessage key={message.id} message={message} />
-      ))}
-      <div ref={bottomRef} className="h-px" aria-hidden="true" />
+      {/* Scrollable messages on top */}
+      <div className="relative flex flex-col gap-6 py-6 px-4 overflow-y-auto h-full">
+        {messages.map((message) => (
+          <ChatMessage key={message.id} message={message} />
+        ))}
+        <div ref={bottomRef} className="h-px" aria-hidden="true" />
+      </div>
     </div>
   );
 }
@@ -90,15 +89,15 @@ function SuggestionChip({ text }: { text: string }) {
         window.dispatchEvent(new CustomEvent("grok:suggest", { detail: { text } }))
       }
       className="
-        group text-left px-4 py-3 rounded-xl text-sm
-        bg-surface-elevated border border-surface-border
+        group text-left px-4 py-3.5 rounded-2xl text-sm
+        bg-surface-elevated/80 border border-accent/20
         text-text-secondary hover:text-text-primary
-        hover:border-accent/60 hover:bg-accent/10
-        hover:shadow-md hover:shadow-accent/10
-        transition-all duration-200 leading-snug
+        hover:border-accent/60 hover:bg-accent/15
+        hover:shadow-lg hover:shadow-accent/20
+        backdrop-blur-sm transition-all duration-200 leading-snug
       "
     >
-      <span className="text-accent/60 group-hover:text-accent mr-1.5 transition-colors">→</span>
+      <span className="text-accent/70 group-hover:text-accent mr-2 transition-colors font-bold">→</span>
       {text}
     </button>
   );

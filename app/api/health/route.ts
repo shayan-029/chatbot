@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/app/lib/mongodb";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const configured = Boolean(process.env.GROQ_API_KEY);
-  return NextResponse.json({ configured }, { status: 200 });
+  const groqConfigured = Boolean(process.env.GROQ_API_KEY);
+  const mongoConfigured = Boolean(process.env.MONGODB_URI);
+
+  let mongoConnected = false;
+  let mongoError = "";
+  if (mongoConfigured) {
+    try {
+      await connectDB();
+      mongoConnected = true;
+    } catch (err) {
+      mongoError = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  const configured = groqConfigured && mongoConnected;
+  return NextResponse.json({ configured, groqConfigured, mongoConfigured, mongoConnected, mongoError });
 }

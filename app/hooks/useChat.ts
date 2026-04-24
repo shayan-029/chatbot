@@ -155,14 +155,13 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
           }
         }
 
-        // Mark done and save
-        setMessages((prev) => {
-          const next = prev.map((m) =>
-            m.id === assistantId ? { ...m, isStreaming: false } : m
-          );
-          onMessagesChangeRef.current?.(next);
-          return next;
-        });
+        // Mark streaming done
+        const finalMessages = messagesRef.current.map((m) =>
+          m.id === assistantId ? { ...m, content: accumulated, isStreaming: false } : m
+        );
+        setMessages(finalMessages);
+        // Save to DB — called outside state setter to avoid React Strict Mode double-invoke
+        onMessagesChangeRef.current?.(finalMessages);
       } catch (err: unknown) {
         if ((err as Error).name === "AbortError") return;
         const msg = err instanceof Error ? err.message : "Something went wrong.";

@@ -18,7 +18,7 @@ export default function SetupBanner() {
           </div>
           <div>
             <h2 className="text-base font-bold text-text-primary">API Key Not Configured</h2>
-            <p className="text-xs text-text-muted mt-0.5">Frog.ai needs a Groq API key to work</p>
+            <p className="text-xs text-text-muted mt-0.5">Turtle.ai needs a Groq API key to work</p>
           </div>
         </div>
 

@@ -17,28 +17,28 @@ function ChatMessage({ message }: ChatMessageProps) {
     <div className={`flex w-full gap-3 animate-fade-up ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
       <div
-        className={`flex-shrink-0 h-8 w-8 rounded-xl flex items-center justify-center text-base select-none
+        className={`flex-shrink-0 h-9 w-9 rounded-2xl flex items-center justify-center text-base select-none
           ${isUser
-            ? "bg-gradient-to-br from-accent to-accent/70 text-surface font-bold text-[10px] shadow-lg shadow-accent/40"
-            : "bg-surface-elevated border border-accent/40 shadow-lg shadow-accent/20"
+            ? "bg-gradient-to-br from-accent via-accent/80 to-accent/50 text-white font-bold text-[10px] shadow-xl shadow-accent/50 ring-1 ring-accent/40"
+            : "bg-surface-elevated border border-accent/30 shadow-lg shadow-accent/20"
           }`}
         aria-hidden="true"
       >
-        {isUser ? "You" : "🐸"}
+        {isUser ? "You" : "🐢"}
       </div>
 
       {/* Bubble */}
-      <div className={`flex flex-col gap-1 max-w-[75%] ${isUser ? "items-end" : "items-start"}`}>
-        <span className="text-xs font-medium text-text-muted px-1">
-          {isUser ? "You" : "Frog.ai"}{" "}
-          <span className="text-text-muted/60">· {formatTime(new Date(message.timestamp))}</span>
+      <div className={`flex flex-col gap-1.5 max-w-[75%] ${isUser ? "items-end" : "items-start"}`}>
+        <span className="text-xs font-semibold text-text-muted px-1">
+          {isUser ? "You" : "Turtle.ai"}{" "}
+          <span className="text-text-muted/50 font-normal">· {formatTime(new Date(message.timestamp))}</span>
         </span>
 
         <div
           className={`relative rounded-2xl px-4 py-3 text-sm leading-relaxed
             ${isUser
-              ? "bg-gradient-to-br from-accent to-accent/75 text-surface font-medium rounded-tr-sm shadow-xl shadow-accent/30"
-              : "bg-surface-elevated border border-accent/20 text-text-primary rounded-tl-sm shadow-md shadow-accent/10"
+              ? "bg-gradient-to-br from-accent via-accent/80 to-accent/60 text-white font-medium rounded-tr-sm shadow-2xl shadow-accent/40 ring-1 ring-accent/30"
+              : "bg-surface-card border border-accent/20 text-text-primary rounded-tl-sm shadow-xl shadow-black/30 backdrop-blur-sm"
             }`}
         >
           {!isUser && isEmpty && message.isStreaming ? (

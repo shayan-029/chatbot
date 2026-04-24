@@ -48,18 +48,13 @@ export default function ChatInput({
     }
   }, [value, isLoading, onSend]);
 
-  // Insert emoji at cursor position
   const handleEmojiSelect = useCallback((emoji: string) => {
     const el = textareaRef.current;
-    if (!el) {
-      setValue((v) => v + emoji);
-      return;
-    }
+    if (!el) { setValue((v) => v + emoji); return; }
     const start = el.selectionStart ?? value.length;
-    const end = el.selectionEnd ?? value.length;
-    const next = value.slice(0, start) + emoji + value.slice(end);
+    const end   = el.selectionEnd   ?? value.length;
+    const next  = value.slice(0, start) + emoji + value.slice(end);
     setValue(next);
-    // Restore cursor after emoji
     requestAnimationFrame(() => {
       el.focus();
       el.setSelectionRange(start + emoji.length, start + emoji.length);
@@ -69,102 +64,101 @@ export default function ChatInput({
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <div className="relative flex items-end gap-2 w-full">
-      {/* Textarea */}
-      <div className="relative flex-1">
+    <div className="relative w-full">
+      {/* Input container */}
+      <div className="
+        relative flex items-end
+        bg-surface-elevated border border-accent/30
+        rounded-2xl overflow-hidden
+        focus-within:border-accent/70
+        focus-within:shadow-lg focus-within:shadow-accent/20
+        transition-all duration-200
+      ">
+        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
-          placeholder="Message…"
+          placeholder="Message Turtle.ai…"
           disabled={disabled}
           rows={1}
           className="
-            w-full resize-none rounded-2xl px-4 py-3 pr-4
-            bg-surface-elevated border border-surface-border
-            text-text-primary text-sm placeholder:text-text-muted
-            focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50
-            disabled:opacity-50 disabled:cursor-not-allowed
-            transition-all duration-150 leading-relaxed
+            flex-1 resize-none bg-transparent
+            px-4 py-3.5 pr-2
+            text-text-primary text-sm placeholder:text-text-muted/60
+            focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed
+            leading-relaxed
           "
           style={{ maxHeight: "200px" }}
           aria-label="Chat message input"
         />
+
+        {/* Right-side action buttons */}
+        <div className="flex items-center gap-1 px-2 pb-2 flex-shrink-0">
+
+          {/* Emoji button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowEmoji((v) => !v)}
+              disabled={disabled}
+              title="Insert emoji"
+              className="
+                h-8 w-8 rounded-xl flex items-center justify-center text-base
+                text-text-muted hover:text-text-primary
+                hover:bg-surface transition-all duration-150
+                disabled:opacity-40 disabled:cursor-not-allowed
+              "
+            >
+              😊
+            </button>
+            {showEmoji && (
+              <EmojiPicker
+                onSelect={handleEmojiSelect}
+                onClose={() => setShowEmoji(false)}
+              />
+            )}
+          </div>
+
+          {/* Send / Stop */}
+          {isLoading ? (
+            <button
+              onClick={onStop}
+              title="Stop generation"
+              className="
+                h-8 w-8 rounded-xl flex items-center justify-center
+                bg-red-500/20 border border-red-500/40
+                text-red-400 hover:bg-red-500/30
+                transition-all duration-150
+              "
+              aria-label="Stop generation"
+            >
+              <span className="block h-2.5 w-2.5 rounded-sm bg-current" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!canSend}
+              title="Send message (Enter)"
+              className="
+                h-8 w-8 rounded-xl flex items-center justify-center
+                bg-accent hover:bg-accent-hover
+                disabled:bg-surface disabled:text-text-muted disabled:border disabled:border-surface-border
+                text-white shadow-lg shadow-accent/30 disabled:shadow-none
+                transition-all duration-150
+              "
+              aria-label="Send message"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth={2.5}
+                strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
-
-      {/* Emoji picker button */}
-      <div className="relative flex-shrink-0">
-        <button
-          onClick={() => setShowEmoji((v) => !v)}
-          disabled={disabled}
-          title="Insert emoji"
-          className="
-            h-10 w-10 rounded-xl flex items-center justify-center text-lg
-            bg-surface-elevated border border-surface-border
-            hover:border-accent/40 hover:bg-surface
-            disabled:opacity-40 disabled:cursor-not-allowed
-            transition-all duration-150
-          "
-        >
-          😊
-        </button>
-
-        {showEmoji && (
-          <EmojiPicker
-            onSelect={handleEmojiSelect}
-            onClose={() => setShowEmoji(false)}
-          />
-        )}
-      </div>
-
-      {/* Send / Stop button */}
-      {isLoading ? (
-        <button
-          onClick={onStop}
-          className="
-            flex-shrink-0 h-10 w-10 rounded-xl
-            bg-surface-elevated border border-surface-border
-            text-text-secondary hover:text-text-primary hover:border-accent/50
-            flex items-center justify-center
-            transition-all duration-150
-          "
-          aria-label="Stop generation"
-          title="Stop generation"
-        >
-          <span className="block h-3 w-3 rounded-sm bg-current" />
-        </button>
-      ) : (
-        <button
-          onClick={handleSend}
-          disabled={!canSend}
-          className="
-            flex-shrink-0 h-10 w-10 rounded-xl
-            bg-accent hover:bg-accent-hover
-            disabled:bg-surface-elevated disabled:text-text-muted
-            disabled:border disabled:border-surface-border
-            text-white flex items-center justify-center
-            transition-all duration-150
-            shadow-lg shadow-accent/20 disabled:shadow-none
-          "
-          aria-label="Send message"
-          title="Send message (Enter)"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
-        </button>
-      )}
     </div>
   );
 }
