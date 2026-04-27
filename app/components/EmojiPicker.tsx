@@ -6,8 +6,7 @@ interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
   onClose: () => void;
 }
-
-const EMOJIS = [
+  const EMOJIS = [
   // Smileys
   "😀","😂","😊","😍","🥰","😎","🤩","😜","😏","🙄",
   "😢","😭","😤","😡","🤬","😱","😨","🥺","😔","🤔",
@@ -25,8 +24,7 @@ const EMOJIS = [
   // Misc
   "🎮","🎵","🎶","📱","💻","🏆","⚡","🌙","☀️","🌊",
 ];
-
-export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
+ export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -40,11 +38,11 @@ export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
+
   return (
     <div
       ref={ref}
       className="
-        absolute bottom-full mb-2 right-0 z-50
         w-72 rounded-2xl border border-surface-border
         bg-surface-card shadow-2xl shadow-black/60
         p-3
@@ -54,7 +52,7 @@ export default function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
         Emojis
       </p>
       <div className="grid grid-cols-10 gap-0.5 max-h-52 overflow-y-auto">
-        {EMOJIS.map((emoji) => (
+        {EMOJIS.map((emoji:any) => (
           <button
             key={emoji}
             onClick={() => {

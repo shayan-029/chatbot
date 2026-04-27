@@ -8,16 +8,15 @@ export async function GET() {
   const mongoConfigured = Boolean(process.env.MONGODB_URI);
 
   let mongoConnected = false;
-  let mongoError = "";
   if (mongoConfigured) {
     try {
       await connectDB();
       mongoConnected = true;
-    } catch (err) {
-      mongoError = err instanceof Error ? err.message : String(err);
+    } catch {
+      // Do not expose connection error details publicly
     }
   }
 
   const configured = groqConfigured && mongoConnected;
-  return NextResponse.json({ configured, groqConfigured, mongoConfigured, mongoConnected, mongoError });
+  return NextResponse.json({ configured, groqConfigured, mongoConfigured, mongoConnected });
 }

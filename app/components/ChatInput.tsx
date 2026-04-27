@@ -65,11 +65,21 @@ export default function ChatInput({
 
   return (
     <div className="relative w-full">
+      {/* Emoji picker — outside overflow container so it's not clipped */}
+      {showEmoji && (
+        <div className="absolute bottom-full right-0 mb-2 z-50">
+          <EmojiPicker
+            onSelect={handleEmojiSelect}
+            onClose={() => setShowEmoji(false)}
+          />
+        </div>
+      )}
+
       {/* Input container */}
       <div className="
         relative flex items-end
         bg-surface-elevated border border-accent/30
-        rounded-2xl overflow-hidden
+        rounded-2xl
         focus-within:border-accent/70
         focus-within:shadow-lg focus-within:shadow-accent/20
         transition-all duration-200
@@ -99,27 +109,19 @@ export default function ChatInput({
         <div className="flex items-center gap-1 px-2 pb-2 flex-shrink-0">
 
           {/* Emoji button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowEmoji((v) => !v)}
-              disabled={disabled}
-              title="Insert emoji"
-              className="
-                h-8 w-8 rounded-xl flex items-center justify-center text-base
-                text-text-muted hover:text-text-primary
-                hover:bg-surface transition-all duration-150
-                disabled:opacity-40 disabled:cursor-not-allowed
-              "
-            >
-              😊
-            </button>
-            {showEmoji && (
-              <EmojiPicker
-                onSelect={handleEmojiSelect}
-                onClose={() => setShowEmoji(false)}
-              />
-            )}
-          </div>
+          <button
+            onClick={() => setShowEmoji((v) => !v)}
+            disabled={disabled}
+            title="Insert emoji"
+            className="
+              h-8 w-8 rounded-xl flex items-center justify-center text-base
+              text-text-muted hover:text-text-primary
+              hover:bg-surface transition-all duration-150
+              disabled:opacity-40 disabled:cursor-not-allowed
+            "
+          >
+            😊
+          </button>
 
           {/* Send / Stop */}
           {isLoading ? (
